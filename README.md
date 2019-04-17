@@ -37,8 +37,10 @@ $ node imp.ts -s office.csv -m mapping.json -t converted.json
 
 the data is converted from CSV to JSON and stored in a file called **output.json**
 
+## Pre-requisites
+You must have <a href="https://nodejs.org">node.js</a> installed
 
-## Props
+## Much Props
 
 This project is built on top of the work of others. Many thanks to: 
 
