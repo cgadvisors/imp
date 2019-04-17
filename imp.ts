@@ -16,35 +16,60 @@ async function imp() {
   const csvSourceFile = "/Users/glopez/Documents/denta/data/user.csv";
   const jsonTargetFile = "/Users/glopez/Documents/denta/data/user.json";
   const mapping = {
-    userID: "id",
-    full_name:
-      "title" + " " + "first_name" + " " + "middle_name" + " " + "last_name",
-    emailAddress: "email",
-    telNumber: "phoneNumber"
+    list: "rows",
+    item: {
+      userID: "id",
+      full_name:
+        "title" + " " + "first_name" + " " + "middle_name" + " " + "last_name",
+      emailAddress: "email",
+      telNumber: "phoneNumber"
+    }
   };
 
   // import data from file and convert into JSON object
   try {
     jsonSource = await csvtojsonV2().fromFile(csvSourceFile);
-    console.log("\nimp started\n\nParsed csv file into jsonSource:\n\n", jsonSource, "\n\n");
+    console.log(
+      "\nimp started\n\nParsed csv file into jsonSource:\n\n",
+      jsonSource,
+      "\n\n"
+    );
   } catch (error) {
-    console.error("Unable to parse csv file: ", csvSourceFile, ". ", error);
+    console.error("Unable to parse csv file: ", csvSourceFile, ".\n", error);
   }
 
   try {
+    // convert json into an object that the data transform can act upon
+    jsonSource = JSON.stringify(jsonSource);
+    jsonSource = '{ "rows" : ' + jsonSource + "}";
+    console.log(
+      "Wrapped jsonSource into a JSON object :\n\n",
+      jsonSource,
+      "\n\n"
+    );
+    jsonSource = JSON.parse(jsonSource);
+
     // transform json object to another json object that conforms to transformation defined in mapping
-    jsonTarget = await DataTransform(jsonSource, mapping);
-    console.log("Transformed jsonSource into jsonTarget:\n\n", jsonSource, "\n\n");
+    const transform = DataTransform(jsonSource, mapping);
+    jsonTarget = transform.transform();
+    jsonTarget = JSON.stringify(jsonTarget);
+
+    console.log(
+      "Transformed jsonSource into jsonTarget:\n\n",
+      jsonTarget,
+      "\n\n"
+    );
   } catch (error) {
-    console.error("Unable to tranform json: ", error);
+    console.error("Unable to tranform jsonSource: ", error);
   }
   // serialize json to file system
-  await jsonfile
-    .writeFile(jsonTargetFile, jsonTarget)
-    .catch(error =>
-      console.error("Unable to write json to filesystem: ", error)
-    );
-  console.log("Wrote jsonTarget into jsonTargetFile at:\n\n", jsonTargetFile, "\n\n");
+  try {
+    jsonTarget = JSON.parse(jsonTarget);
+    await jsonfile.writeFile(jsonTargetFile, jsonTarget);
+    console.log("Wrote jsonTarget to:\n\n", jsonTargetFile, "\n\n");
+  } catch (error) {
+    console.error("Unable to write json to filesystem: ", error);
+  }
 }
 
 // run the data transformation
