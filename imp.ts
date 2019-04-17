@@ -1,76 +1,99 @@
 const csvtojsonV2 = require("csvtojson");
 var DataTransform = require("node-json-transform").DataTransform;
 const jsonfile = require("jsonfile");
+const args = require("args");
 
-/** 
-    file: user.csv column headers:
-    id, display_name,	first_name,	last_name,	middle_name,	
-    email,	org_id,	phoneNumber,	photoURL,	record_created_date,	
-    record_last_modified_by,	record_last_modified_date, status,	title
-*/
+args
+  .option("source", "path to csv file.")
+  .option("mapping", "path to mapping file.")
+  .option("target", "path to where json file will be stored.")
+  .example(
+    "node imp.ts -s ./sourcefile.csv",
+    "source file will be transformed to json and stored in ./imp-output.json"
+  )
+  .example(
+    "node imp.ts -s ./sourcefile.csv -m ./mapping.json",
+    "source file will be transformed to json according to mapping in mapping.json and stored in ./imp-output.json"
+  )
+  .example(
+    "node imp.ts -s ./sourcefile.csv -m ./mapping.json -t ./targetfile.json",
+    "source file will be transformed to json according to mapping in mapping.json and stored ./targetfile.json"
+  );
+const logo =
+  "\n\n#### ##     ## ########\n" +
+  " ##  ###   ### ##     ##\n" +
+  " ##  #### #### ##     ##\n" +
+  " ##  ## ### ## ########\n" +
+  " ##  ##     ## ##\n" +
+  " ##  ##     ## ##\n" +
+  "#### ##     ## ##        Copyright CG Advisors LLC 2019";
 
-async function imp() {
-  let jsonSource, jsonTarget;
+const flags = args.parse(process.argv, { value: logo });
 
-  // todo - import these three constants from command line arguments
-  const csvSourceFile = "/Users/glopez/Documents/denta/data/user.csv";
-  const jsonTargetFile = "/Users/glopez/Documents/denta/data/user.json";
-  const mapping = {
-    list: "rows",
-    item: {
-      userID: "id",
-      full_name:
-        "title" + " " + "first_name" + " " + "middle_name" + " " + "last_name",
-      emailAddress: "email",
-      telNumber: "phoneNumber"
+imp(flags);
+
+async function imp(flags) {
+  let csvSourceFile, jsonSource, mapping, jsonTarget, jsonTargetFile;
+
+  if (!flags.source) {
+    console.log("\n\nError: no source file specified.");
+  } else {
+    csvSourceFile = flags.source;
+
+    // import source data from file and convert into JSON object
+    try {
+      jsonSource = await csvtojsonV2().fromFile(csvSourceFile);
+      console.log("\n\nRead source csv data file and converted it to json format:\n", jsonSource);
+    } catch (error) {
+      console.error("\n\nError: Unable to parse csv file: ", csvSourceFile, ".\n", error);
+      return;
     }
-  };
 
-  // import data from file and convert into JSON object
-  try {
-    jsonSource = await csvtojsonV2().fromFile(csvSourceFile);
-    console.log(
-      "\nimp started\n\nParsed csv file into jsonSource:\n\n",
-      jsonSource,
-      "\n\n"
-    );
-  } catch (error) {
-    console.error("Unable to parse csv file: ", csvSourceFile, ".\n", error);
-  }
+    // import mapping from file and convert into JSON object
+    if (flags.mapping) {
+      mapping = flags.mapping;
+      try {
+        mapping = jsonfile.readFileSync(mapping)
+        // mapping = JSON.parse(mapping)
+        // console.log("\n\nParsed mapping file:\n", JSON.stringify(mapping));
+      } catch (error) {
+        console.error("\n\nError: Unable to parse mapping file: ", mapping, "\n", error);
+        return;
+      }
 
-  try {
-    // convert json into an object that the data transform can act upon
-    jsonSource = JSON.stringify(jsonSource);
-    jsonSource = '{ "rows" : ' + jsonSource + "}";
-    console.log(
-      "Wrapped jsonSource into a JSON object :\n\n",
-      jsonSource,
-      "\n\n"
-    );
-    jsonSource = JSON.parse(jsonSource);
+      // transform jsonSource object to another json object that conforms to transformation defined in mapping
+      try {
+        jsonSource = JSON.stringify(jsonSource);
+        jsonSource = '{ "rows" : ' + jsonSource + "}";
+        jsonSource = JSON.parse(jsonSource);
+        const transform = DataTransform(jsonSource, mapping);
+        jsonTarget = transform.transform();
+        console.log(
+          "\n\nTransformed source data into target data format based on mapping:\n",
+          jsonTarget
+        );        
+        jsonTarget = JSON.stringify(jsonTarget);
+        jsonTarget = JSON.parse(jsonTarget);
+      } catch (error) {
+        console.error("\n\nError: Unable to tranform jsonSource: ", error);
+        return;
+      }
+    } else {
+      jsonTarget = jsonSource;
+    }
 
-    // transform json object to another json object that conforms to transformation defined in mapping
-    const transform = DataTransform(jsonSource, mapping);
-    jsonTarget = transform.transform();
-    jsonTarget = JSON.stringify(jsonTarget);
+    // serialize json to file system
+    if (flags.target) {
+      jsonTargetFile = flags.target;
+    } else {
+      jsonTargetFile = "./output.json";
+    }
 
-    console.log(
-      "Transformed jsonSource into jsonTarget:\n\n",
-      jsonTarget,
-      "\n\n"
-    );
-  } catch (error) {
-    console.error("Unable to tranform jsonSource: ", error);
-  }
-  // serialize json to file system
-  try {
-    jsonTarget = JSON.parse(jsonTarget);
-    await jsonfile.writeFile(jsonTargetFile, jsonTarget);
-    console.log("Wrote jsonTarget to:\n\n", jsonTargetFile, "\n\n");
-  } catch (error) {
-    console.error("Unable to write json to filesystem: ", error);
+    try {
+      await jsonfile.writeFile(jsonTargetFile, jsonTarget);
+      console.log("\n\nWrote target data in json format to a file at:", jsonTargetFile, "\n\n");
+    } catch (error) {
+      console.error("\n\nError: Unable to write json to filesystem: ", error, "\n\n");
+    }
   }
 }
-
-// run the data transformation
-imp();
