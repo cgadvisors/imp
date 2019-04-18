@@ -16,7 +16,7 @@ the data is converted from CSV to JSON and stored in a file called **output.json
 ### Convert CSV to JSON and transform some of the values 
 Now let's say you are only interested in capturing some of the fields. 
 
-Create a mapping in a file called mapping.json. 
+Create a mapping in a file called <a href="https://raw.githubusercontent.com/cgadvisors/imp/master/mapping.json">mapping.json</a>. 
 
 ```
 {
