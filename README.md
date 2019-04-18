@@ -38,7 +38,7 @@ $ node imp.ts -s office.csv -m mapping.json -t converted.json
 the data is converted from CSV to JSON and stored in a file called **<a href="https://raw.githubusercontent.com/cgadvisors/imp/master/output.json">output.json</a>**
 
 ### Transform Data Values
-You can event transform data values <a href="https://www.npmjs.com/package/node-json-transform">using your own js functions</a>!
+If you need to change the data values, you can create a mapping file that allows you to <a href="https://www.npmjs.com/package/node-json-transform">call your own javascript functions</a>!
 
 ## Pre-requisites
 You must have <a href="https://nodejs.org">node.js</a> installed
