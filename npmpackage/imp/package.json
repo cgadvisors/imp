@@ -1,0 +1,30 @@
+{
+  "name": "@cgadvisors/imp",
+  "version": "1.0.1",
+  "description": "An easy to use node.js CLI program that allows you to convert comma delimited (CSV) data file into a JSON data file.",
+  "main": "imp.ts",
+  "bin": {
+    "imp": "./bin/imp.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cgadvisors/imp.git"
+  },
+  "keywords": [
+    "csv",
+    "json",
+    "convert",
+    "transform",
+    "node",
+    "cli"
+  ],
+  "author": "Gustavo Lopez info@cgadvisorsgroup.com https://www.cgadvisorsgroup.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cgadvisors/imp/issues"
+  },
+  "homepage": "https://github.com/cgadvisors/imp#readme"
+}
