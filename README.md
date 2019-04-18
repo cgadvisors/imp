@@ -4,7 +4,7 @@ An easy to use node.js CLI program that allows you to transform Comma Delimitted
 ## How it works
 
 ### Convert CSV to JSON
-Let's say you have a data file office.csv containing a list of offices in CSV format and you want to convert the data in that file into JSON format.
+Let's say you have a data file <a href="https://raw.githubusercontent.com/cgadvisors/imp/master/office.csv">office.csv</a> containing a list of offices in CSV format and you want to convert the data in that file into JSON format.
 
 Simply run the command
 
